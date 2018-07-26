@@ -1,23 +1,23 @@
 <?php
-
-include_once('config.php');
-include('libs/Soap.php');
-
-$url1 = "https://www.w3schools.com/xml/tempconvert.asmx?WSDL";
- try
-    {
-		$soap = new Soap($url1);
-		$client = $soap->newClient();
-		var_dump($client->__getFunctions());
-	}
-    catch (Exception $e)
-    {
-        $message = $message . '<br />' . $e->getMessage();
-    }
+require_once __DIR__ . '/vendor/autoload.php';
+include ('config.php');
+include ('libs/Controller.php');
+include ('libs/View.php');
+include ('libs/Model.php');
 
 
 
+try
+{
+  $obj = new Controller();
+}
+catch(Exception $e)
+{
+  echo $e->getMessage();
+}
 
-include_once('templates/index.php');
 
-?>
+
+
+
+
