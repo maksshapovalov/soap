@@ -14,7 +14,7 @@ class Controller
 			{	
 				if (isset($_POST['convert']))
 				{
-					$this->model->getConvert($_POST['postValue'], $_POST['convert']);					
+					$this->model->getConvert($_POST['postValue'], $_POST['convert']);
 				}
 				$this->view->render('result.php', 'index.php', $this->model->getData());
 			}
