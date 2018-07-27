@@ -22,12 +22,17 @@ public function getResult($func, $req)
 	return $this->client->$func($req);
 }
 
-private function startClient()
+public function getLastRequest()
 {
-	$this->client = new SoapClient($this->urlWsdl);
+	//return array('response' => $this->client->__getLastResponse(),
+				//'request' => $this->client->__getLastRequest());
+	return $this->client->__getLastRequest();
 }
 
-	
+private function startClient()
+{
+	$this->client = new SoapClient($this->urlWsdl, array('trace' => 1));
+}
 	
 }
 ?>

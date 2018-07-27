@@ -26,6 +26,31 @@ class Model
 		return $this->data;
 	}
 	
+	public function getValute()
+	{
+		$this->soap->setUrl('http://www.cbr.ru/DailyInfoWebServ/DailyInfo.asmx?WSDL');
+		$date = $this->soap->getResult('GetLatestDateTime', null);
+		$result =  $this->soap->getResult('GetCursOnDateXML',(array('On_date'=>$date->GetLatestDateTimeResult)));
+		$request = $this->soap->getLastRequest();
+		var_dump($request);
+		
+		$url = 'http://www.cbr.ru/DailyInfoWebServ/DailyInfo.asmx';
+		$headers = array('Host: www.cbr.ru',
+						'Connection: Keep-Alive',
+						'User-Agent: PHP-SOAP/5.6.30',
+						'Content-Type: text/xml; charset=utf-8',
+						'SOAPAction: "http://web.cbr.ru/GetCursOnDateXML"',
+						'Content-Length: '.strlen($request));
+
+		$curlResult = ($this->curl->getResult($url, $request, $headers));
+		//var_dump($curlResult);
+		$this->getValutesXML(simplexml_load_string($curlResult));
+		// if ($curlResult->GetCursOnDateXMLResult->any) 
+		// {
+			// $this->getValutesXML($result->GetCursOnDateXMLResult->any);
+		// }
+	}
+	
 	public function getConvert($value, $function)
 	{
 		$this->value = $value;
@@ -37,10 +62,26 @@ class Model
 		$this->getConvertSoap();		
 	}
 	
+	private function getValutesXML ($result)
+	{
+		$xml = new SimpleXMLElement($result);
+		var_export($xml->ValuteCursOnDate);
+			foreach ($xml->ValuteCursOnDate as $currency) 
+			{
+				if ('USD' == $currency->VchCode)
+				{
+					echo $currency->Vname.' $ = '.($currency->Vcurs).' &#8381;</br>';
+				}
+				if ('EUR' == $currency->VchCode)
+				{
+					echo $currency->Vname.' € = '.($currency->Vcurs).' &#8381;</br>';
+				}
+				//echo $currency->VchCode.' = '.($currency->Vcurs).'</br>';
+			}
+	}
+	
 	private function getConvertCurl()
 	{
-		$this->curl->setHost('www.w3schools.com');
-		
 		$url = 'https://www.w3schools.com/xml/tempconvert.asmx/'.$this->function;
 		
 		if ('FahrenheitToCelsius' == $this->function)
@@ -54,7 +95,10 @@ class Model
 			$this->suf = '&deg;F';
 		}
 		
-		$curlResult = $this->curl->getResult($url, $post);
+		$headers = array('Host: www.w3schools.com', 
+						'Content-Type: application/x-www-form-urlencoded', 
+						'Content-Length: '.strlen($post));
+		$curlResult = $this->curl->getResult($url, $post, $headers);
 		preg_match('#<string xmlns="https://www.w3schools.com/xml/">(.+?)</string>#is', $curlResult, $curlResult);
 		
 		$this->setData('Curl', $curlResult[1].$this->suf);

@@ -9,7 +9,8 @@ class Controller
 		{		
 		    $this->model = new Model();
 			$this->view = new View();
-				
+			
+			$this->model->getValute();
 			if(!empty ($_POST))
 			{	
 				if (isset($_POST['convert']))
