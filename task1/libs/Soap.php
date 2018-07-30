@@ -24,9 +24,9 @@ public function getResult($func, $req)
 
 public function getLastRequest()
 {
-	//return array('response' => $this->client->__getLastResponse(),
-				//'request' => $this->client->__getLastRequest());
-	return $this->client->__getLastRequest();
+	return array('response' => $this->client->__getLastResponse(),
+				'request' => $this->client->__getLastRequest());
+	//return $this->client->__getLastRequest();
 }
 
 private function startClient()

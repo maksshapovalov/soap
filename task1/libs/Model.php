@@ -40,11 +40,12 @@ class Model
 						'User-Agent: PHP-SOAP/5.6.30',
 						'Content-Type: text/xml; charset=utf-8',
 						'SOAPAction: "http://web.cbr.ru/GetCursOnDateXML"',
-						'Content-Length: '.strlen($request));
+						'Content-Length: '.strlen($request['request']));
 
-		$curlResult = ($this->curl->getResult($url, $request, $headers));
-		//var_dump($curlResult);
-		$this->getValutesXML(simplexml_load_string($curlResult));
+		$curlResult = ($this->curl->getResult($url, $request['request'], $headers));
+		var_dump($curlResult);
+		//$curlResult = simplexml_load_string(str_ireplace(['soap:', 'm:'], '', $curlResult));
+		$this->getValutesXML($curlResult->GetCursOnDateXMLResult->any);
 		// if ($curlResult->GetCursOnDateXMLResult->any) 
 		// {
 			// $this->getValutesXML($result->GetCursOnDateXMLResult->any);
@@ -65,7 +66,7 @@ class Model
 	private function getValutesXML ($result)
 	{
 		$xml = new SimpleXMLElement($result);
-		var_export($xml->ValuteCursOnDate);
+		//var_dump($xml->GetCursOnDateXMLResult->any);
 			foreach ($xml->ValuteCursOnDate as $currency) 
 			{
 				if ('USD' == $currency->VchCode)
