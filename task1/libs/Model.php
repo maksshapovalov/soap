@@ -32,9 +32,6 @@ class Model
 		$date = $this->soap->getResult('GetLatestDateTime', null);
 		$result =  $this->soap->getResult('GetCursOnDateXML',(array('On_date'=>$date->GetLatestDateTimeResult)));
 		$request = $this->soap->getLastRequest();
-		echo '<pre>';
-		var_dump($request);
-		echo '</pre>';
 		$url = 'http://www.cbr.ru/DailyInfoWebServ/DailyInfo.asmx';
 		$headers = array('Host: www.cbr.ru',
 						'Connection: Keep-Alive',
@@ -44,12 +41,9 @@ class Model
 						'Content-Length: '.strlen($request['request']));
 
 		$curlResult = ($this->curl->getResult($url, $request['request'], $headers));
-		
-		$curlResult = simplexml_load_string(str_ireplace(['soap:', 'm:'], '', $curlResult));
-		echo '<pre>';
-		var_dump($curlResult);
-		echo '</pre>';
-		$this->getValutesXML($curlResult->ValuteCursOnDate);
+		$curlResult = new SimpleXMLElement(str_ireplace(['soap:', 'm:'], '', $curlResult));
+		$this->setData('valuteCurl', $this->getValutesXML($curlResult->Body[0]->GetCursOnDateXMLResponse[0]->GetCursOnDateXMLResult[0]->ValuteData[0]));
+		$this->setData('valuteSoap', $this->getValutesXML(new SimpleXMLElement($result->GetCursOnDateXMLResult->any)));
 	}
 	
 	public function getConvert($value, $function)
@@ -65,23 +59,19 @@ class Model
 	
 	private function getValutesXML ($result)
 	{
-		echo '<pre>';
-		var_dump($result);
-		echo '</pre>';
-		$xml = new SimpleXMLElement($result);
-		//var_dump($xml->GetCursOnDateXMLResult->any);
-			foreach ($xml->ValuteCursOnDate as $currency) 
+		$valutes = array();
+		foreach ($result->ValuteCursOnDate as $currency) 
+		{
+			if ('USD' == $currency->VchCode)
 			{
-				if ('USD' == $currency->VchCode)
-				{
-					echo $currency->Vname.' $ = '.($currency->Vcurs).' &#8381;</br>';
-				}
-				if ('EUR' == $currency->VchCode)
-				{
-					echo $currency->Vname.' € = '.($currency->Vcurs).' &#8381;</br>';
-				}
-				//echo $currency->VchCode.' = '.($currency->Vcurs).'</br>';
+				$valutes[] = $currency->VchCode.' $ = '.($currency->Vcurs).' &#8381;';
 			}
+			if ('EUR' == $currency->VchCode)
+			{
+				$valutes[] = $currency->VchCode.' € = '.($currency->Vcurs).' &#8381;';
+			}
+		}
+		return $valutes;
 	}
 	
 	private function getConvertCurl()
